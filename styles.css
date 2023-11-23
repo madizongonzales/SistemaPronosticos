@@ -1,0 +1,35 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
+input {
+  outline: none;
+  border: none;
+}
+
+table {
+  width: 500px;
+  border: 1px solid black;
+}
+table thead tr {
+  height: 30px;
+  background: burlywood;
+}
+table tbody tr {
+  height: 40px;
+  border-bottom: 1px solid #ddd;
+}
+table tbody tr:last-child {
+  border-bottom: none;
+}
+table tbody tr:nth-child(odd) {
+  background: #f2f2f2;
+}
+table td {
+  text-align: center;
+}
