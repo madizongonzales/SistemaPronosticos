@@ -51,6 +51,11 @@ function calcularPronostico($metodo, $demanda, $indice)
 {
     $indice = max($indice, 0);
     $n = intval($_POST["n_promedio_movil_simple"]);
+
+    /*Recuperar alfa para suavizado exponencial simple*/
+    $alfa = floatval($_POST["alfa_suavizado_exponencial_simple"]);
+
+
     if ($metodo === "n_promedio_movil_simple") {
         if ($indice < $n) {
             return ""; // No se pueden calcular pronósticos para los primeros $n periodos
@@ -89,6 +94,18 @@ function calcularPronostico($metodo, $demanda, $indice)
 
         // return ""; // Método no reconocido
 
+    }elseif ($metodo === "suavizado_exponencial_simple") { 
+
+        if ($indice === 0) {
+            return $demanda[0]; // El primer pronóstico es igual a la primera demanda
+        }
+
+        $pronostico = $demanda[0];
+
+        for ($i = 1; $i <= $indice; $i++) {
+            $pronostico = $alfa * $demanda[$i - 1] + (1 - $alfa) * $pronostico;
+        }
+        return $pronostico; // Valor calculado según el método
     }
 }
 ?>
