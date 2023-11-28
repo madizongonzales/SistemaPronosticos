@@ -55,6 +55,17 @@ function calcularPronostico($metodo, $demanda, $indice)
     /*Recuperar alfa para suavizado exponencial simple*/
     $alfa = floatval($_POST["alfa_suavizado_exponencial_simple"]);
 
+    /*Recuperar los valores para el promedio móvil ponderado*/
+    $t1 = floatval($_POST["t1_promedio_movil_ponderado"]);
+    $t2 = floatval($_POST["t2_promedio_movil_ponderado"]);
+    $t3 = floatval($_POST["t3_promedio_movil_ponderado"]);
+
+    /*Recuperar los valores para el suavizado exponencial doble*/
+    $alfad = floatval($_POST["alfa_suavizado_exponencial_doble"]);
+    $beta = floatval($_POST["beta_suavizado_exponencial_doble"]);
+    $rho = floatval($_POST["RHO_suavizado_exponencial_doble"]);
+
+
 
     if ($metodo === "n_promedio_movil_simple") {
         if ($indice < $n) {
@@ -69,30 +80,18 @@ function calcularPronostico($metodo, $demanda, $indice)
         }
 
         $pronostico = $suma / $n; // Calcula el promedio móvil simple
+        return $pronostico; 
 
-        return $pronostico; // Valor calculado según el método
-        // }elseif ($metodo === "promedio-movil-ponderado") {
-        //     // Lógica para promedio móvil ponderado
-        //     // ...
-        //     return $pronostico; // Valor calculado según el método
-        // }elseif ($metodo === "alfa_suavizado_exponencial_simple") {
-        //     // Lógica para promedio móvil ponderado
-        //     // ...
-        //     return $pronostico; // Valor calculado según el método
-        // }elseif ($metodo === "suavizado_exponencial_doble") {
-        //     // Lógica para promedio móvil ponderado
-        //     // ...
-        //     return $pronostico; // Valor calculado según el método
-        // }elseif ($metodo === "winters") {
-        //     // Lógica para promedio móvil ponderado
-        //     // ...
-        //     return $pronostico; // Valor calculado según el método
-        // }elseif ($metodo === "regresionlineal") {
-        //     // Lógica para promedio móvil ponderado
-        //     // ...
-        //     return $pronostico; // Valor calculado según el método
+    } elseif ($metodo === "promedio_movil_ponderado") { // Asegurarse de que hay suficientes datos para calcular el promedio móvil ponderado
 
-        // return ""; // Método no reconocido
+
+            if ($indice < 3) {
+                return "";
+            }
+    
+            // Calcular el promedio móvil ponderado para los tres últimos elementos
+            $pronostico = ($t1 * $demanda[$indice - 1] + $t2 * $demanda[$indice - 2] + $t3 * $demanda[$indice - 3]) / ($t1 + $t2 + $t3);
+            return $pronostico;
 
     }elseif ($metodo === "suavizado_exponencial_simple") { 
 
@@ -106,8 +105,26 @@ function calcularPronostico($metodo, $demanda, $indice)
             $pronostico = $alfa * $demanda[$i - 1] + (1 - $alfa) * $pronostico;
         }
         return $pronostico; // Valor calculado según el método
-    }
-}
+    }elseif ($metodo === "suavizado_exponencial_doble") { 
+        
+        $at = $demanda[0];
+        $tend = 0;
+        $at_ant = $at;
+
+        for ($i = 0; $i < $indice && $i < count($demanda); $i++) {
+            $at_temp = $at;
+            $at = $alfad * $demanda[$i] + (1 - $alfad) * ($at_temp + $tend);
+            $tend = $beta * ($at - $at_ant) + (1 - $beta) * $tend;
+
+            $at_ant = $at;
+        }
+
+        if ($indice == 0) {
+            return ""; // No se genera un pronóstico para el primer periodo
+        } else {
+            return $at + $rho * $tend;
+        }
+}}
 ?>
 <table>
     <tr>
