@@ -25,7 +25,7 @@
             Suavizado Exponencial Doble
           </option>
           <option value="winters">Método Winters</option>
-          <option value="regresionlineal">Regresión Lineal</option>
+          <option value="regresion_lineal">Regresión Lineal</option>
         </select>
 
         <div id="n_promedio_movil_simple" style="display: none">
@@ -117,9 +117,10 @@
             name="gamma_winters"
           />
           <label for="L">L:</label>
-          <input type="text" name="L" required />
+          <input type="text" name="L" />
         </div>
-        <div id="regresionlineal" style="display: none">
+
+        <div id="regresion_lineal" style="display: none">
           <label for="a_regresionlineal">Valor de a:</label>
           <input
             type="number"

@@ -16,8 +16,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Realizar los cálculos según el método seleccionado
     $pronosticos = calcularPronosticos($metodo, $numPeriodos, $demanda);
 }
-
-//regresion lineal
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Obtener los valores del formulario
     $a = isset($_POST['a_regresionlineal']) ? floatval($_POST['a_regresionlineal']) : 0;
@@ -27,12 +25,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Mostrar el número de períodos
     echo "Períodos: $periodos<br>";
 
+
     // Calcular el resultado de la regresión lineal para cada período
     // for ($n = 1; $n <= $periodos; $n++) {
     //     $resultado = $a + ($b * $n);
     //     echo "Resultado para el período $n: $resultado<br>";
     // }
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $num_periodos = $_POST['periodos'];
@@ -64,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $Ttw[1] = 0;
     $St[1] = 1; // Comienza en 
     $Winters[1] = 0; // Fórmula inicial
-
 
     // Calcular At, Tt, Atw, Ttw, St y Winters
     for ($i = 2; $i <= $num_periodos; $i++) {
@@ -116,7 +115,7 @@ function calcularPronosticos($metodo, $numPeriodos, $demanda)
     return $pronosticos;
 }
 
-function calcularPronostico($metodo, $demanda, $indice)
+function calcularPronostico($metodo, $demanda, $indice,)
 {
     $indice = max($indice, 0);
     $n = intval($_POST["n_promedio_movil_simple"]);
@@ -137,7 +136,7 @@ function calcularPronostico($metodo, $demanda, $indice)
     //Rucupero datos para Winters
     // $numPeriodos = $_POST['periodos'];
     $alpha = $_POST['alpha_winters'];
-    $beta = $_POST['beta_winters'];
+    $betaw = $_POST['beta_winters'];
     $gamma = $_POST['gamma_winters'];
     $L = $_POST['L'];
 
@@ -198,122 +197,44 @@ function calcularPronostico($metodo, $demanda, $indice)
         } else {
             return $at + $rho * $tend;
         }
-
-        //Metodo Winters
-    } elseif ($metodo === "winter") {
-        //     $numPeriodos = $_POST['periodos'];
-        //     $alpha = $_POST['alpha_winters'];
-        //     $beta = $_POST['beta_winters'];
-        //     $gamma = $_POST['gamma_winters'];
-        //     $L = $_POST['L'];
-
-        //     // Inicializar arrays para almacenar datos
-        //     $demanda = [];
-        //     $At = [];
-        //     $Tt = [];
-        //     $Atw = [];
-        //     $Ttw = [];
-        //     $St = [];
-        //     $Winters = [];
-        //     $error = [];
-
-        //     // Obtener demanda introducida
-        //     for ($i = 1; $i <= $numPeriodos; $i++) {
-        //         // $demanda[$i] = $_POST["demanda_periodo_.$i"];
-        //         $demanda[$i] = $_POST["demanda_periodo_" . $i];
-        //     }
-
-        //     // Calcular con el método Winters
-        //     // Inicializar primeros valores
-        //     $At[1] = $demanda[1];
-        //     $Tt[1] = 0;
-        //     $Atw[1] = $demanda[1];
-        //     $Ttw[1] = 0;
-        //     $St[1] = 1; // Comienza en 
-        //     $Winters[1] = 0; // Fórmula inicial
-
-
-        //     // Calcular At, Tt, Atw, Ttw, St y Winters
-        //     for ($i = 2; $i <= $numPeriodos; $i++) {
-        //         // At
-        //         $At[$i] = $alpha * $demanda[$i] + (1 - $alpha) * ($At[$i - 1] + $Tt[$i - 1]);
-
-        //         // Tt
-        //         $Tt[$i] = $beta * ($At[$i] - $At[$i - 1]) + (1 - $beta) * $Tt[$i - 1];
-
-        //         // Atw
-        //         if ($i <= $L) {
-        //             $Atw[$i] = $alpha * ($demanda[$i] / 1) + (1 - $alpha) * ($Atw[$i - 1] + $Ttw[$i - 1]);
-        //         } else {
-        //             $Atw[$i] = $alpha * ($demanda[$i] / $St[$i - $L]) + (1 - $alpha) * ($Atw[$i - 1] + $Ttw[$i - 1]);
-        //         }
-
-        //         // Ttw
-        //         $Ttw[$i] = $beta * ($Atw[$i] - $Atw[$i - 1]) + (1 - $beta) * $Ttw[$i - 1];
-
-        //         // St
-        //         if ($i <= $L) {
-        //             $St[$i] = $gamma * ($demanda[$i] / $Atw[$i]) + (1 - $gamma) * 1; // Siguientes L-1 valores
-        //         } else {
-        //             $St[$i] = $gamma * ($demanda[$i] / $Atw[$i]) + (1 - $gamma) * $St[$i - $L]; // Resto de valores
-        //         }
-
-        //         // Winters
-        //         if ($i <= $L) {
-        //             $Winters[$i] = ($Atw[$i - 1] + 1 * $Ttw[$i - 1]) * 1;
-        //         } else {
-        //             $Winters[$i] = ($Atw[$i - 1] + 1 * $Ttw[$i - 1]) * $St[$i - $L];
-        //         }
-        //         // Calcular error
-        //         $error[$i] = $demanda[$i] - $St[$i];
-        //     }
-        //     // Devolver el último pronóstico después de salir del bucle
-        //     $pronostico = $Winters[$numPeriodos];
-        //     return $pronostico;
+    } elseif ($metodo === "regresion_lineal2") {
+        $a = isset($_POST['a_regresionlineal']) ? floatval($_POST['a_regresionlineal']) : 0;  // Supongamos que calcularA y calcularB son funciones que calculan los valores de 'a' y 'b' respectivamente.
+        $b = isset($_POST['b_regresionlineal']) ? floatval($_POST['b_regresionlineal']) : 0;
     }
 }
 ?>
+
 <table border="1">
-    <!-- <tr>
+    <tr>
         <th>Periodo</th>
         <th>Demanda</th>
         <th>Pronóstico</th>
         <th>Regresion Lineal</th>
-    </tr> -->
-    <tr>
-        <th>Número</th>
-        <th>Demanda</th>
         <th>Winters</th>
         <th>At</th>
         <th>Tt</th>
         <th>Atw</th>
         <th>Ttw</th>
         <th>St</th>
-        <th>Pronóstico</th>
     </tr>
+
     <?php
-    // for ($i = 0; $i < $numPeriodos; $i++) {
-    //     echo "<tr>";
-    //     echo "<td>" . ($i + 1) . "</td>"; // Mostrar el periodo
-    //     echo "<td>" . $demanda[$i] . "</td>"; // Mostrar la demanda
-    //     echo "<td>" . $pronosticos[$i] . "</td>";
-    //     $RL = $a + ($b * ($i + 1));
-    //     echo "<td>" . "$RL<br>" . "</td>"; // Mostrar el pronóstico
-    //     echo "</tr>";
-    // }
-    for ($i = 1; $i <= $numPeriodos; $i++) {
+    for ($i = 0; $i < $numPeriodos; $i++) {
         echo "<tr>";
-        echo "<td>$i</td>";
-        echo "<td>{$demanda[$i]}</td>";
-        echo "<td>" . round($Winters[$i]) . "</td>";
-        echo "<td>{$At[$i]}</td>";
-        echo "<td>{$Tt[$i]}</td>";
-        echo "<td>{$Atw[$i]}</td>";
-        echo "<td>{$Ttw[$i]}</td>";
-        echo "<td>{$St[$i]}</td>";
-        echo "<td>{$pronostico}</td>";
+        echo "<td>" . ($i + 1) . "</td>"; // Mostrar el periodo
+        echo "<td>" . $demanda[$i + 1] . "</td>"; // Mostrar la demanda
+        echo "<td>" . $pronosticos[$i] . "</td>";
+        $RL = $a + ($b * ($i + 1));
+        echo "<td>" . round($RL) . "<br>" . "</td>"; // Mostrar el pronóstico
+        echo "<td>" . round($Winters[$i + 1]) . "</td>";
+        echo "<td>{$At[$i + 1]}</td>";
+        echo "<td>{$Tt[$i + 1]}</td>";
+        echo "<td>{$Atw[$i + 1]}</td>";
+        echo "<td>{$Ttw[$i + 1]}</td>";
+        echo "<td>{$St[$i + 1]}</td>";
         echo "</tr>";
     }
+
     ?>
 
 </table>
