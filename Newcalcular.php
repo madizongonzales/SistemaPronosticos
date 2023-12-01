@@ -92,6 +92,60 @@ function calcularRegresionLineal($a, $b, $periodos)
     return $resultados;
 }
 
+//metodo de winters
+function calcularWinters($periodosw, $alphaw, $betaw, $gammaw, $Lw, $demandaw)
+{
+
+    $At = $Tt = $Atw = $Ttw = $St = $Winters = [];
+
+    // Inicializar primeros valores
+    $At[1] = intval($demandaw[1]);
+    $Tt[1] = 0;
+    $Atw[1] = intval($demandaw[1]);
+    $Ttw[1] = 0;
+    $St[1] = 1; // Comienza en 1 como número entero
+    $Winters[1] = 0; // Fórmula inicial
+
+    // Calcular At, Tt, Atw, Ttw, St y Winters
+    for ($i = 2; $i <= $periodosw; $i++) {
+        // At
+        $At[$i] = intval($alphaw * intval($demandaw[$i]) + (1 - $alphaw) * (intval($At[$i - 1]) + intval($Tt[$i - 1])));
+
+        // Tt
+        $Tt[$i] = intval($betaw * (intval($At[$i]) - intval($At[$i - 1])) + (1 - $betaw) * intval($Tt[$i - 1]));
+
+        // Atw
+        if ($i <= $Lw) {
+            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / 1) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+        } else {
+            $St[$i - $Lw] = isset($St[$i - $Lw]) ? intval($St[$i - $Lw]) : 1;
+            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / intval($St[$i - $Lw])) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+        }
+
+        // Ttw
+        $Ttw[$i] = intval($betaw * (intval($Atw[$i]) - intval($Atw[$i - 1])) + (1 - $betaw) * intval($Ttw[$i - 1]));
+
+        // St
+        if ($i <= $Lw) {
+            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * 1); // Siguientes L-1 valores
+        } else {
+            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * intval($St[$i - $Lw])); // Resto de valores
+        }
+
+        // Winters
+        if ($i <= $Lw) {
+            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * 1);
+        } else {
+            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * intval($St[$i - $Lw]));
+        }
+
+        //Calcular error
+        //$error[$i] = intval($demanda[$i]) - intval($St[$i]);
+    }
+
+    return $Winters;
+}
+
 
 
 /************************************************************/
@@ -165,7 +219,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Mostrar error cuadrático medio para el promedio móvil simple
     if ($errores_cuadraticos_pm_simple > 0) {
         $ecm_pm_simple = $errores_cuadraticos_pm_simple / (count($demanda) - max($n, 3));
-
     }
 
     /*Error porcentual medio absoluto*/
@@ -182,9 +235,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($errores_porcentuales_pm_simple > 0) {
         $mape_pm_simple = ($errores_porcentuales_pm_simple / (count($demanda) - max($n, 3))) * 100;
     }
-
-
-
 }
 
 
@@ -237,8 +287,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($errores_porcentuales_pm_ponderado > 0 && is_array($demanda)) {
         $mape_pm_ponderado = ($errores_porcentuales_pm_ponderado / (count($demanda) - max($n, 3))) * 100;
     }
-
-
 }
 
 
@@ -300,7 +348,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($errores_porcentuales_suavizado_simple > 0 && is_array($demanda)) {
         $mape_suavizado_simple = ($errores_porcentuales_suavizado_simple / ($num_periodos - 1)) * 100;
     }
-
 }
 
 
@@ -374,9 +421,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($errores_porcentuales_suavizado_doble > 0 && is_array($demanda)) {
         $mape_suavizado_doble = ($errores_porcentuales_suavizado_doble / ($num_periodos - $rho)) * 100;
     }
-
-
-
 }
 
 
@@ -403,7 +447,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($diferencias_acumuladas_regresion_lineal > 0 && is_array($demanda)) {
         $promedio_diferencias_regresion_lineal = $diferencias_acumuladas_regresion_lineal / $num_periodos;
-
     }
 
     // Calcular el error cuadrático medio para la regresión lineal
@@ -430,16 +473,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Mostrar error porcentual medio absoluto para la regresión lineal
-if ($errores_porcentuales_regresion_lineal > 0 && is_array($demanda)) {
-    $mape_regresion_lineal = ($errores_porcentuales_regresion_lineal / (count($demanda))) * 100;
+    if ($errores_porcentuales_regresion_lineal > 0 && is_array($demanda)) {
+        $mape_regresion_lineal = ($errores_porcentuales_regresion_lineal / (count($demanda))) * 100;
+    }
 }
+
+// Método de Winters
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["metodo"]) && $_POST["metodo"] === "winters") {
+    $num_periodos = $_POST['periodos'];
+    $alpha = $_POST['alpha_winters'];
+    $beta = $_POST['beta_winters'];
+    $gamma = $_POST['gamma_winters'];
+    $L = $_POST['L'];
+
+    // Obtener demanda introducida
+    $demanda = [];
+    for ($i = 1; $i <= $num_periodos; $i++) {
+        $demanda[$i] = $_POST["demanda_periodo_$i"];
+    }
+
+    // Calcular con el método Winters
+    $resultadosWinters = calcularWinters($num_periodos, $alpha, $beta, $gamma, $L, $demanda);
 }
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Mostrar el número de períodos
     echo "Períodos: $periodos<br>";
-
 }
 
 ?>
@@ -463,7 +523,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "<td>" . $demanda[$i] . "</td>";
         // Verificar si el índice existe en $promedio_movil_simple
         $pms = $i - $n;
-        echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms]), 2) : '') . '</td>';
+        echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
         echo '<td>' . ($Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '') . '</td>';
         echo "<td>" . ($resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '') . "</td>";
         echo '<td>' . (isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '') . '</td>';
@@ -477,53 +537,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ?>
 </table>
 
-/*//</?php*/*/
-
-<!-- // Mostrar tabla de errores
-echo "<table border='1px'>";
-echo "<tr>";
-echo "<th></th>";
-echo "<th>Promedio Móvil Simple</th>";
-echo "<th>Promedio Móvil Ponderado</th>";
-echo "<th>Suavizado Exponencial Simple</th>";
-echo "<th>Regresión Lineal</th>";
-echo "<th>Suavizado Exponencial Doble</th>";
-echo "<th>Winters</th>";
-// Agrega más columnas según sea necesario
-
-echo "</tr>";
-echo "<tr>";
-echo "<td>MAD</td>";
-echo "<td>" . ($promedio_diferencias_pm_simple ?? '') . "</td>";
-echo "<td>" . ($promedio_diferencias ?? '') . "</td>";
-echo "<td>" . ($promedio_diferencias_suavizado_simple ?? '') . "</td>";
-echo "<td>" . ($promedio_diferencias_regresion_lineal ?? '') . "</td>";
-echo "<td>" . ($promedio_diferencias_suavizado_doble ?? '') . "</td>";
-echo "<td>" . ($promedio_diferencias_winters ?? '') . "</td>";
-// Agrega más celdas con los valores de MAD para cada método
-
-echo "</tr>";
-echo "<tr>";
-echo "<td>MSE</td>";
-echo "<td>" . ($ecm_pm_simple ?? '') . "</td>";
-echo "<td>" . ($ecm_pm_ponderado ?? '') . "</td>";
-echo "<td>" . ($ecm_suavizado_simple ?? '') . "</td>";
-echo "<td>" . ($ecm_regresion_lineal ?? '') . "</td>";
-echo "<td>" . ($ecm_suavizado_doble ?? '') . "</td>";
-echo "<td>" . ($ecm_winters ?? '') . "</td>";
-// Agrega más celdas con los valores de MSE para cada método
-
-echo "</tr>";
-echo "<tr>";
-echo "<td>MAPE</td>";
-echo "<td>" . ($mape_pm_simple ?? '') . "</td>";
-echo "<td>" . ($mape_pm_ponderado ?? '') . "</td>";
-echo "<td>" . ($mape_suavizado_simple ?? '') . "</td>";
-echo "<td>" . ($mape_regresion_lineal ?? '') . "</td>";
-echo "<td>" . ($mape_suavizado_doble ?? '') . "</td>";
-echo "<td>" . ($mape_winters ?? '') . "</td>";
-// Agrega más celdas con los valores de MAPE para cada método
-
-echo "</tr>";
-// Agrega más filas según sea necesario
-echo "</table>";  -->
+/*//</?php* /*/ <!-- // Mostrar tabla de errores echo "<table border='1px'>" ; echo "<tr>" ; echo "<th></th>" ; echo "<th>Promedio Móvil Simple</th>" ; echo "<th>Promedio Móvil Ponderado</th>" ; echo "<th>Suavizado Exponencial Simple</th>" ; echo "<th>Regresión Lineal</th>" ; echo "<th>Suavizado Exponencial Doble</th>" ; echo "<th>Winters</th>" ; // Agrega más columnas según sea necesario echo "</tr>" ; echo "<tr>" ; echo "<td>MAD</td>" ; echo "<td>" . ($promedio_diferencias_pm_simple ?? '' ) . "</td>" ; echo "<td>" . ($promedio_diferencias ?? '' ) . "</td>" ; echo "<td>" . ($promedio_diferencias_suavizado_simple ?? '' ) . "</td>" ; echo "<td>" . ($promedio_diferencias_regresion_lineal ?? '' ) . "</td>" ; echo "<td>" . ($promedio_diferencias_suavizado_doble ?? '' ) . "</td>" ; echo "<td>" . ($promedio_diferencias_winters ?? '' ) . "</td>" ; // Agrega más celdas con los valores de MAD para cada método echo "</tr>" ; echo "<tr>" ; echo "<td>MSE</td>" ; echo "<td>" . ($ecm_pm_simple ?? '' ) . "</td>" ; echo "<td>" . ($ecm_pm_ponderado ?? '' ) . "</td>" ; echo "<td>" . ($ecm_suavizado_simple ?? '' ) . "</td>" ; echo "<td>" . ($ecm_regresion_lineal ?? '' ) . "</td>" ; echo "<td>" . ($ecm_suavizado_doble ?? '' ) . "</td>" ; echo "<td>" . ($ecm_winters ?? '' ) . "</td>" ; // Agrega más celdas con los valores de MSE para cada método echo "</tr>" ; echo "<tr>" ; echo "<td>MAPE</td>" ; echo "<td>" . ($mape_pm_simple ?? '' ) . "</td>" ; echo "<td>" . ($mape_pm_ponderado ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_simple ?? '' ) . "</td>" ; echo "<td>" . ($mape_regresion_lineal ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_doble ?? '' ) . "</td>" ; echo "<td>" . ($mape_winters ?? '' ) . "</td>" ; // Agrega más celdas con los valores de MAPE para cada método echo "</tr>" ; // Agrega más filas según sea necesario echo "</table>" ; -->
