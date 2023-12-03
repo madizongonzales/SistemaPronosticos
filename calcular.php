@@ -1,5 +1,6 @@
 <?php
-
+$num_periodos = $_POST['periodos'];
+$selectedMethods = isset($_POST['metodo']) ? $_POST['metodo'] : [];
 //promedio movil simple
 function calcularPromedioMovilSimple($demanda, $n, $num_periodos)
 {
@@ -109,34 +110,34 @@ function calcularWinters($periodosw, $alphaw, $betaw, $gammaw, $Lw, $demandaw)
     // Calcular At, Tt, Atw, Ttw, St y Winters
     for ($i = 2; $i <= $periodosw; $i++) {
         // At
-        $At[$i] = intval($alphaw * intval($demandaw[$i]) + (1 - $alphaw) * (intval($At[$i - 1]) + intval($Tt[$i - 1])));
+        $At[$i] = floatval($alphaw * floatval($demandaw[$i]) + (1 - $alphaw) * (floatval($At[$i - 1]) + floatval($Tt[$i - 1])));
 
         // Tt
-        $Tt[$i] = intval($betaw * (intval($At[$i]) - intval($At[$i - 1])) + (1 - $betaw) * intval($Tt[$i - 1]));
+        $Tt[$i] = floatval($betaw * (floatval($At[$i]) - floatval($At[$i - 1])) + (1 - $betaw) * floatval($Tt[$i - 1]));
 
         // Atw
         if ($i <= $Lw) {
-            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / 1) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+            $Atw[$i] = floatval($alphaw * (floatval($demandaw[$i]) / 1) + (1 - $alphaw) * (floatval($Atw[$i - 1]) + floatval($Ttw[$i - 1])));
         } else {
-            $St[$i - $Lw] = isset($St[$i - $Lw]) ? intval($St[$i - $Lw]) : 1;
-            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / intval($St[$i - $Lw])) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+            $St[$i - $Lw] = isset($St[$i - $Lw]) ? floatval($St[$i - $Lw]) : 1;
+            $Atw[$i] = floatval($alphaw * (floatval($demandaw[$i]) / floatval($St[$i - $Lw])) + (1 - $alphaw) * (floatval($Atw[$i - 1]) + floatval($Ttw[$i - 1])));
         }
 
         // Ttw
-        $Ttw[$i] = intval($betaw * (intval($Atw[$i]) - intval($Atw[$i - 1])) + (1 - $betaw) * intval($Ttw[$i - 1]));
+        $Ttw[$i] = floatval($betaw * (floatval($Atw[$i]) - floatval($Atw[$i - 1])) + (1 - $betaw) * floatval($Ttw[$i - 1]));
 
         // St
         if ($i <= $Lw) {
-            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * 1); // Siguientes L-1 valores
+            $St[$i] = floatval($gammaw * (floatval($demandaw[$i]) / floatval($Atw[$i])) + (1 - $gammaw) * 1); // Siguientes L-1 valores
         } else {
-            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * intval($St[$i - $Lw])); // Resto de valores
+            $St[$i] = floatval($gammaw * (floatval($demandaw[$i]) / floatval($Atw[$i])) + (1 - $gammaw) * floatval($St[$i - $Lw])); // Resto de valores
         }
 
         // Winters
         if ($i <= $Lw) {
-            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * 1);
+            $Winters[$i] = floatval((floatval($Atw[$i - 1]) + 1 * floatval($Ttw[$i - 1])) * 1);
         } else {
-            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * intval($St[$i - $Lw]));
+            $Winters[$i] = floatval((floatval($Atw[$i - 1]) + 1 * floatval($Ttw[$i - 1])) * floatval($St[$i - $Lw]));
         }
 
         //Calcular error
@@ -502,72 +503,125 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo "Períodos: $periodos<br>";
 }
 
+// Define una función para verificar si un método está seleccionado
+?>
+<?php
+// Obtén los métodos seleccionados desde el formulario
+$metodos_seleccionados = $_POST['metodo']; // en lugar de $_POST['metodos']
+ // Asegúrate de que 'metodos' es el nombre correcto del campo en tu formulario
+
+echo '<table border="1px">';
+echo '<tr>';
+echo '<th>Periodo</th>';
+echo '<th>Demanda</th>';
+
+// Muestra las columnas de los métodos seleccionados
+
+if ($metodos_seleccionados != null) {
+    foreach ($metodos_seleccionados as $metodo) {
+        echo "<th>$metodo</th>";
+    }
+}
+
+
+echo '</tr>';
+
+for ($i = 1; $i <= $num_periodos; $i++) {
+    echo "<tr>";
+    echo "<td>" . $i . "</td>";
+    echo "<td>" . $demanda[$i] . "</td>";
+
+    // Muestra los datos de los métodos seleccionados
+    foreach ($metodos_seleccionados as $metodo) {
+        switch ($metodo) {
+            case 'n_promedio_movil_simple':
+                $pms = $i - $n;
+                echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
+                break;
+            case 'n_promedio_movil_ponderado':
+                echo '<td>' . ($Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '') . '</td>';
+                break;
+            case 'suavizado_exponencial_simple':
+                echo "<td>" . ($resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '') . "</td>";
+                break;
+            case 'regresion_lineal':
+                echo '<td>' . (isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '') . '</td>';
+                break;
+            case 'suavizado_exponencial_doble':
+                echo "<td>" . (isset($resultadosSuavizadoDoble[$i]) ? round($resultadosSuavizadoDoble[$i]) : '') . "</td>";
+                break;
+            case 'winters':
+                echo '<td>' . (isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '') . '</td>';
+                break;
+        }
+    }
+
+    echo "</tr>";
+}
+
+echo '</table>';
 ?>
 
-<table border="1px">
-    <tr>
-        <th>Periodo</th>
-        <th>Demanda</th>
-        <th>Promedio movil simple</th>
-        <th>Promedio movil ponderado</th>
-        <th>Suavizado Exponencial Simple</th>
-        <th>Regresion Lineal</th>
-        <th>Suavizado Exponensial doble</th>
-        <th>winters</th>
-    </tr>
-
-    <?php
-    for ($i = 1; $i <= $num_periodos; $i++) {
-        echo "<tr>";
-        echo "<td>" . $i . "</td>";
-        echo "<td>" . $demanda[$i] . "</td>";
-        // Verificar si el índice existe en $promedio_movil_simple
-        $pms = $i - $n;
-        echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
-        echo '<td>' . ($Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '') . '</td>';
-        echo "<td>" . ($resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '') . "</td>";
-        echo '<td>' . (isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '') . '</td>';
-        echo "<td>" . (isset($resultadosSuavizadoDoble[$i]) ? round($resultadosSuavizadoDoble[$i]) : '') . "</td>";
-        echo '<td>' . (isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '') . '</td>';
-        echo "</tr>";
-    }
-    ?>
-</table>
 <br>
 <br>
 <!-- Mostrar tabla de errores echo  -->
-<table border='1px'>
-    <?php
-    echo "<tr>" ; echo "<th></th>" ; 
-    echo "<th>Promedio Móvil Simple</th>" ; 
-    echo "<th>Promedio Móvil Ponderado</th>" ; 
-    echo "<th>Suavizado Exponencial Simple</th>" ; 
-    echo "<th>Regresión Lineal</th>" ; 
-    echo "<th>Suavizado Exponencial Doble</th>" ; 
-    echo "<th>Winters</th>" ; 
-    // Agrega más columnas según sea necesario 
-    echo "</tr>" ; echo "<tr>" ; echo "<td>MAD</td>" ; 
-    echo "<td>" . ($promedio_diferencias_pm_simple ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_suavizado_simple ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_regresion_lineal ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_suavizado_doble ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_winters ?? '' ) . "</td>" ;
-     // Agrega más celdas con los valores de MAD para cada método 
-     echo "</tr>" ; echo "<tr>" ; echo "<td>MSE</td>" ; 
-     echo "<td>" . ($ecm_pm_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_pm_ponderado ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_suavizado_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_regresion_lineal ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_suavizado_doble ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_winters ?? '' ) . "</td>" ; 
-     // Agrega más celdas con los valores de MSE para cada método 
-     echo "</tr>" ; echo "<tr>" ; echo "<td>MAPE</td>" ; echo "<td>" . ($mape_pm_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_pm_ponderado ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_regresion_lineal ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_doble ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_winters ?? '' ) . "</td>" ; 
-     // Agrega más celdas con los valores de MAPE para cada método echo 
-     "</tr>" ; 
-     // Agrega más filas según sea necesario echo 
-     "</table>" ;
-     ?>
+<?php
+// Obtén los métodos seleccionados desde el formulario
+$metodos_seleccionados = $_POST['metodo']; // Asegúrate de que 'metodo' es el nombre correcto del campo en tu formulario
+
+echo '<table border="1px" id="tabla">';
+echo '<tr>';
+echo '<th></th>';
+
+// Muestra las columnas de los métodos seleccionados
+foreach ($metodos_seleccionados as $metodo) {
+    echo "<th>$metodo</th>";
+}
+
+echo '</tr>';
+
+$metricas = ['MAD', 'MSE', 'MAPE'];
+$promedio_diferencias_winters = isset($promedio_diferencias_winters) ? $promedio_diferencias_winters : '';
+$ecm_winters = isset($ecm_winters) ? $ecm_winters : '';
+$mape_winters = isset($mape_winters) ? $mape_winters : '';
+$datos = [
+    'n_promedio_movil_simple' => [$promedio_diferencias_pm_simple, $ecm_pm_simple, $mape_pm_simple],
+    'n_promedio_movil_ponderado' => [$promedio_diferencias, $ecm_pm_ponderado, $mape_pm_ponderado],
+    'suavizado_exponencial_simple' => [$promedio_diferencias_suavizado_simple, $ecm_suavizado_simple, $mape_suavizado_simple],
+    'suavizado_exponencial_doble' => [$promedio_diferencias_suavizado_doble, $ecm_suavizado_doble, $mape_suavizado_doble],
+    'winters' => [$promedio_diferencias_winters, $ecm_winters, $mape_winters],
+    'regresion_lineal' => [$promedio_diferencias_regresion_lineal, $ecm_regresion_lineal, $mape_regresion_lineal]
+];
+
+$menores = array_fill_keys($metodos_seleccionados, 0);
+
+foreach ($metricas as $i => $metrica) {
+    echo "<tr>";
+    echo "<td>$metrica</td>";
+
+    $fila = [];
+    // Muestra los datos de los métodos seleccionados
+    foreach ($metodos_seleccionados as $metodo) {
+        $dato = $datos[$metodo][$i] ?? '';
+        $fila[] = $dato;
+        echo "<td>" . $dato . "</td>";
+    }
+
+    $minimo = min($fila);
+    foreach ($fila as $j => $dato) {
+        if ($dato == $minimo) {
+            $menores[$metodos_seleccionados[$j]]++;
+        }
+    }
+
+    echo "</tr>";
+}
+
+echo '</table>';
+
+arsort($menores);
+$metodo_menor = key($menores);
+
+echo "<p>El método con la mayor cantidad de datos menores es: <strong>$metodo_menor</strong></p>";
+
+?>
