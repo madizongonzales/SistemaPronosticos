@@ -505,115 +505,105 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Define una función para verificar si un método está seleccionado
 ?>
+<?php
+// Obtén los métodos seleccionados desde el formulario
+$metodos_seleccionados = $_POST['metodo']; // en lugar de $_POST['metodos']
+ // Asegúrate de que 'metodos' es el nombre correcto del campo en tu formulario
 
-<table border="1px">
-    <tr>
-        <th>Periodo</th>
-        <th>Demanda</th>
-        <?php
-// Verificar si se ha enviado el formulario
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Obtener los métodos seleccionados
-    $metodosSeleccionados = isset($_POST["metodo"]) ? $_POST["metodo"] : [];
+echo '<table border="1px">';
+echo '<tr>';
+echo '<th>Periodo</th>';
+echo '<th>Demanda</th>';
 
-    // Convertir a array si es una cadena
-    if (!is_array($metodosSeleccionados)) {
-        $metodosSeleccionados = [$metodosSeleccionados];
-    }
+// Muestra las columnas de los métodos seleccionados
 
-    // Mostrar las columnas correspondientes a los métodos seleccionados
-    foreach ($metodosSeleccionados as $metodo) {
-        echo '<th>' . ucfirst(str_replace("_", " ", $metodo)) . '</th>';
-    }
-
-    // Obtener el número de períodos
-    $num_periodos = isset($_POST["periodos"]) ? (int)$_POST["periodos"] : 0;
-
-    // Obtener los datos de la demanda (ajusta esto según tu lógica)
-    $demanda = [];
-    for ($i = 1; $i <= $num_periodos; $i++) {
-        $demanda[$i] = isset($_POST["demanda_periodo_$i"]) ? (int)$_POST["demanda_periodo_$i"] : 0;
-    }
-
-    // Resto del código para la tabla
-    for ($j = 1; $j <= $num_periodos; $j++) {
-        // Resto del código para la tabla
-        echo "<tr>";
-        echo "<td>" . $j . "</td>";
-        echo "<td>" . $demanda[$j] . "</td>";
-
-        // Mostrar los datos correspondientes a los métodos seleccionados
-        foreach ($metodosSeleccionados as $metodo) {
-            switch ($metodo) {
-                case "n_promedio_movil_simple":
-                    $pms = $j - $n;
-                    echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
-                    break;
-
-                case "n_promedio_movil_ponderado":
-                    echo '<td>' . ($Pmponderado[$j] !== '' ? round($Pmponderado[$j]) : '') . '</td>';
-                    break;
-
-                case "suavizado_exponencial_simple":
-                    echo "<td>" . ($resultadosSES[$j] !== '' ? round($resultadosSES[$j]) : '') . "</td>";
-                    break;
-
-                case "regresion_lineal":
-                    echo '<td>' . (isset($resultadosRegresionLineal[$j - 1]) ? round($resultadosRegresionLineal[$j - 1]) : '') . '</td>';
-                    break;
-
-                case "suavizado_exponencial_doble":
-                    echo "<td>" . (isset($resultadosSuavizadoDoble[$j]) ? round($resultadosSuavizadoDoble[$j]) : '') . "</td>";
-                    break;
-
-                case "winters":
-                    echo '<td>' . (isset($resultadosWinters[$j]) ? round($resultadosWinters[$j]) : '') . '</td>';
-                    break;
-            }
-        }
-
-        echo "</tr>";
+if ($metodos_seleccionados != null) {
+    foreach ($metodos_seleccionados as $metodo) {
+        echo "<th>$metodo</th>";
     }
 }
 
+
+echo '</tr>';
+
+for ($i = 1; $i <= $num_periodos; $i++) {
+    echo "<tr>";
+    echo "<td>" . $i . "</td>";
+    echo "<td>" . $demanda[$i] . "</td>";
+
+    // Muestra los datos de los métodos seleccionados
+    foreach ($metodos_seleccionados as $metodo) {
+        switch ($metodo) {
+            case 'n_promedio_movil_simple':
+                $pms = $i - $n;
+                echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
+                break;
+            case 'n_promedio_movil_ponderado':
+                echo '<td>' . ($Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '') . '</td>';
+                break;
+            case 'suavizado_exponencial_simple':
+                echo "<td>" . ($resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '') . "</td>";
+                break;
+            case 'regresion_lineal':
+                echo '<td>' . (isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '') . '</td>';
+                break;
+            case 'suavizado_exponencial_doble':
+                echo "<td>" . (isset($resultadosSuavizadoDoble[$i]) ? round($resultadosSuavizadoDoble[$i]) : '') . "</td>";
+                break;
+            case 'winters':
+                echo '<td>' . (isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '') . '</td>';
+                break;
+        }
+    }
+
+    echo "</tr>";
+}
+
+echo '</table>';
 ?>
-</table>
-       
+
 <br>
 <br>
 <!-- Mostrar tabla de errores echo  -->
-<table border='1px'>
-    <?php
-    echo "<tr>" ; echo "<th></th>" ; 
-    echo "<th>Promedio Móvil Simple</th>" ; 
-    echo "<th>Promedio Móvil Ponderado</th>" ; 
-    echo "<th>Suavizado Exponencial Simple</th>" ; 
-    echo "<th>Regresión Lineal</th>" ; 
-    echo "<th>Suavizado Exponencial Doble</th>" ; 
-    echo "<th>Winters</th>" ; 
-    // Agrega más columnas según sea necesario 
-    echo "</tr>" ; echo "<tr>" ; echo "<td>MAD</td>" ; 
-    echo "<td>" . ($promedio_diferencias_pm_simple ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_suavizado_simple ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_regresion_lineal ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_suavizado_doble ?? '' ) . "</td>" ; 
-    echo "<td>" . ($promedio_diferencias_winters ?? '' ) . "</td>" ;
-     // Agrega más celdas con los valores de MAD para cada método 
-     echo "</tr>" ; echo "<tr>" ; echo "<td>MSE</td>" ; 
-     echo "<td>" . ($ecm_pm_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_pm_ponderado ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_suavizado_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_regresion_lineal ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_suavizado_doble ?? '' ) . "</td>" ; 
-     echo "<td>" . ($ecm_winters ?? '' ) . "</td>" ; 
-     // Agrega más celdas con los valores de MSE para cada método 
-     echo "</tr>" ; echo "<tr>" ; echo "<td>MAPE</td>" ; echo "<td>" . ($mape_pm_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_pm_ponderado ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_simple ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_regresion_lineal ?? '' ) . "</td>" ; echo "<td>" . ($mape_suavizado_doble ?? '' ) . "</td>" ; 
-     echo "<td>" . ($mape_winters ?? '' ) . "</td>" ; 
-     // Agrega más celdas con los valores de MAPE para cada método echo 
-     "</tr>" ; 
-     // Agrega más filas según sea necesario echo 
-     "</table>" ;
-     ?>
+<?php
+// Obtén los métodos seleccionados desde el formulario
+$metodos_seleccionados = $_POST['metodo']; // Asegúrate de que 'metodo' es el nombre correcto del campo en tu formulario
+
+echo '<table border="1px">';
+echo '<tr>';
+echo '<th></th>';
+
+// Muestra las columnas de los métodos seleccionados
+foreach ($metodos_seleccionados as $metodo) {
+    echo "<th>$metodo</th>";
+}
+
+echo '</tr>';
+
+$metricas = ['MAD', 'MSE', 'MAPE'];
+$promedio_diferencias_winters = isset($promedio_diferencias_winters) ? $promedio_diferencias_winters : '';
+$ecm_winters = isset($ecm_winters) ? $ecm_winters : '';
+$mape_winters = isset($mape_winters) ? $mape_winters : '';
+$datos = [
+    'n_promedio_movil_simple' => [$promedio_diferencias_pm_simple, $ecm_pm_simple, $mape_pm_simple],
+    'n_promedio_movil_ponderado' => [$promedio_diferencias, $ecm_pm_ponderado, $mape_pm_ponderado],
+    'suavizado_exponencial_simple' => [$promedio_diferencias_suavizado_simple, $ecm_suavizado_simple, $mape_suavizado_simple],
+    'suavizado_exponencial_doble' => [$promedio_diferencias_suavizado_doble, $ecm_suavizado_doble, $mape_suavizado_doble],
+    'winters' => [$promedio_diferencias_winters, $ecm_winters, $mape_winters],
+    'regresion_lineal' => [$promedio_diferencias_regresion_lineal, $ecm_regresion_lineal, $mape_regresion_lineal]
+];
+
+foreach ($metricas as $i => $metrica) {
+    echo "<tr>";
+    echo "<td>$metrica</td>";
+
+    // Muestra los datos de los métodos seleccionados
+    foreach ($metodos_seleccionados as $metodo) {
+        echo "<td>" . ($datos[$metodo][$i] ?? '') . "</td>";
+    }
+
+    echo "</tr>";
+}
+
+echo '</table>';
+?>
