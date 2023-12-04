@@ -555,74 +555,50 @@ for ($i = 1; $i <= $num_periodos; $i++) {
     echo "<td>" . $demanda[$i] . "</td>";
 
     // Muestra los datos de los métodos seleccionados
-    // Muestra los datos de los métodos seleccionados
     foreach ($metodos_seleccionados as $metodo) {
         switch ($metodo) {
             case 'n_promedio_movil_simple':
                 $pms = $i - $n;
                 $value = isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '';
-                echo '<td>' . $value . '</td>';
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
                 break;
 
             case 'n_promedio_movil_ponderado':
                 $value = $Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '';
-                echo '<td>' . $value . '</td>';
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
                 break;
 
             case 'suavizado_exponencial_simple':
                 $value = $resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '';
-                echo "<td>" . $value . "</td>";
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
                 break;
 
             case 'regresion_lineal':
                 $value = isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '';
-                echo '<td>' . $value . '</td>';
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
                 break;
 
             case 'suavizado_exponencial_doble':
-                $value = $resultadosSuavizadoDoble[$i] !== '' ? round($resultadosSuavizadoDoble[$i]) : '';
-                echo "<td>" . $value . "</td>";
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
+                $value = isset($resultadosSuavizadoDoble[$i]) && $resultadosSuavizadoDoble[$i] !== '' ? round($resultadosSuavizadoDoble[$i]) : '';
                 break;
 
             case 'winters':
                 $value = isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '';
-                echo '<td>' . $value . '</td>';
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
-                }
-                $datasets[$metodo][$i - 1] = $value;
                 break;
+        }
+
+        // Excluir valores vacíos o 0
+        if ($value !== '' && $value !== 0) {
+            // Agregar dato al conjunto de datos
+            if (!isset($datasets[$metodo])) {
+                $datasets[$metodo] = array_fill(0, $num_periodos, null);
+            }
+            $datasets[$metodo][$i - 1] = $value;
+            echo '<td>' . $value . '</td>';
+        } else {
+            echo '<td></td>';
         }
     }
 
     echo "</tr>";
 }
+
 
 echo '</table>';
 // Convertir datos de la gráfica a formato JSON
@@ -640,6 +616,7 @@ foreach ($datasets as $label => $data) {
 }
 
 // Imprimir datos de la gráfica
+echo '<div class="grafica">';
 echo '<h2>Gráfica:</h2>';
 echo '<canvas id="myChart" width="400" height="200"></canvas>';
 echo '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
@@ -655,7 +632,8 @@ echo '                type: "linear",';
 echo '                position: "bottom",';
 echo '                ticks: {';
 echo '                    min: 0,';
-echo '                    max: ' . ($num_periodos - 1) . ',';
+// echo '                    max: ' . ($num_periodos - 1) . ',';
+echo '                        max:12,';
 echo '                    stepSize: 1,';
 echo '                },';
 echo '            }],';
@@ -671,6 +649,7 @@ echo '        },';
 echo '    },';
 echo '});';
 echo '</script>';
+echo '</div>';
 ?>
 
 
