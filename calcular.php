@@ -191,6 +191,7 @@ $errores_porcentuales_winters = 0;
 
 
 //metodo promedio movil simple
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $n = intval($_POST["n_promedio_movil_simple"]);
     $num_periodos = intval($_POST['periodos']);
@@ -209,6 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $promedio_movil_simple = calcularPromedioMovilSimple($demanda, $n, $num_periodos);
 
     // Calcular la desviación media absoluta
+
     for ($i = $n + 1; $i <= $num_periodos; $i++) {
         if (isset($promedio_movil_simple[$i - $n])) {
             $diferencia = abs(floatval($demanda[$i]) - floatval($promedio_movil_simple[$i - $n]));
@@ -217,10 +219,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Mostrar desviación media absoluta para cada método
+
     if ($diferencias_acumuladas_pm_simple > 0) {
         $promedio_diferencias_pm_simple = $diferencias_acumuladas_pm_simple / (count($demanda) - max($n, 3));
     }
 
+    /************************************************************/
     /*Erro cuadratico*/
 
     // Calcular el error cuadrático medio para el promedio móvil simple
@@ -236,6 +240,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $ecm_pm_simple = $errores_cuadraticos_pm_simple / (count($demanda) - max($n, 3));
     }
 
+    /************************************************************/
     /*Error porcentual medio absoluto*/
 
     // Calcular el error porcentual medio absoluto para el promedio móvil simple
@@ -273,6 +278,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $promedio_diferencias = $diferencias_acumuladas_pm_ponderado / (count($demanda) - max($n, 3));
     }
 
+    /************************************************************/
     /*Erro cuadratico*/
 
     // Calcular el error cuadrático medio para el promedio móvil ponderado
@@ -288,6 +294,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $ecm_pm_ponderado = $errores_cuadraticos_pm_ponderado / (count($demanda) - max($n, 3));
     }
 
+    /************************************************************/
     /*Error porcentual medio absoluto*/
 
     // Calcular el error porcentual medio absoluto para el promedio móvil ponderado
@@ -334,6 +341,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $promedio_diferencias_suavizado_simple = $diferencias_acumuladas_suavizado_simple / ($num_periodos - 1);
     }
 
+    /************************************************************/
     /*Erro cuadratico*/
 
     // Calcular el error cuadrático medio para el suavizado exponencial simple
@@ -349,6 +357,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $ecm_suavizado_simple = $errores_cuadraticos_suavizado_simple / ($num_periodos - 1);
     }
 
+    /************************************************************/
     /*Error porcentual medio absoluto*/
 
     // Calcular el error porcentual medio absoluto para el suavizado exponencial simple
@@ -401,7 +410,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $promedio_diferencias_suavizado_doble = $diferencias_acumuladas_suavizado_doble / ($num_periodos - $rho);
     }
 
-
+    /************************************************************/
     /*Erro cuadratico*/
 
     // Método suavizado exponencial doble
@@ -422,6 +431,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
+    /************************************************************/
     /*Error porcentual medio absoluto*/
 
     // Calcular el error porcentual medio absoluto para el suavizado exponencial doble
@@ -477,6 +487,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $ecm_regresion_lineal = $errores_cuadraticos_regresion_lineal / $num_periodos;
     }
 
+    /************************************************************/
     /*Error porcentual medio absoluto*/
 
     // Calcular el error porcentual medio absoluto para la regresión lineal
@@ -494,7 +505,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Método de Winters
-// if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["metodo"]) && $_POST["metodo"] === "winters") {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $num_periodos = $_POST['periodos'];
     $alpha = $_POST['alpha_winters'];
@@ -575,9 +585,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Define una función para verificar si un método está seleccionado
 ?>
 <?php
+
 // Obtén los métodos seleccionados desde el formulario
-$metodos_seleccionados = $_POST['metodo']; // en lugar de $_POST['metodos']
-// Asegúrate de que 'metodos' es el nombre correcto del campo en tu formulario
+$metodos_seleccionados = $_POST['metodo'];
+
 echo '<h2>Pronosticos:</h2>';
 echo '<table border="1px">';
 echo '<tr>';
@@ -685,7 +696,6 @@ echo '                type: "linear",';
 echo '                position: "bottom",';
 echo '                ticks: {';
 echo '                    min: 0,';
-// echo '                    max: ' . ($num_periodos - 1) . ',';
 echo '                        max:12,';
 echo '                    stepSize: 1,';
 echo '                },';
@@ -712,7 +722,7 @@ echo '</div>';
 <!-- Mostrar tabla de errores echo  -->
 <?php
 // Obtén los métodos seleccionados desde el formulario
-$metodos_seleccionados = $_POST['metodo']; // Asegúrate de que 'metodo' es el nombre correcto del campo en tu formulario
+$metodos_seleccionados = $_POST['metodo'];
 echo '<h2>Errores:</h2>';
 echo '<table border="1px" id="tabla">';
 echo '<tr>';
@@ -771,7 +781,6 @@ $metodo_menor = key($menores);
 
 echo "<p>El método con la mayor cantidad de datos menores es: <strong>$metodo_menor</strong></p>";
 echo '<table border="1px">';
-// echo '<tr><th></th><th></th></tr>';
 
 foreach ($metricas as $i => $metrica) {
     $dato = $datos[$metodo_menor][$i] ?? '';
