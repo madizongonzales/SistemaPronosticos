@@ -622,6 +622,17 @@ echo '</table>';
 arsort($menores);
 $metodo_menor = key($menores);
 
-echo "<p>El método con la mayor cantidad de datos menores es: <strong>$metodo_menor</strong></p>";
 
+
+echo "<p>El método con la mayor cantidad de datos menores es: <strong>$metodo_menor</strong></p>";
+echo '<table border="1px">';
+// echo '<tr><th></th><th></th></tr>';
+
+foreach ($metricas as $i => $metrica) {
+    $dato = $datos[$metodo_menor][$i] ?? '';
+    echo "<tr><td>$metrica</td><td>$dato</td></tr>";
+}
+
+echo '</table>';
 ?>
+<br>
