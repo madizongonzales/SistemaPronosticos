@@ -181,6 +181,7 @@ $errores_cuadraticos_pm_ponderado = 0;
 $errores_cuadraticos_suavizado_simple = 0;
 $errores_cuadraticos_regresion_lineal = 0;
 $errores_cuadraticos_suavizado_doble = 0;
+$errores_cuadraticos_winters = 0;
 
 // Variables para acumular los errores porcentuales medios absolutos
 $errores_porcentuales_pm_simple = 0;
@@ -188,6 +189,7 @@ $errores_porcentuales_pm_ponderado = 0;
 $errores_porcentuales_suavizado_simple = 0;
 $errores_porcentuales_regresion_lineal = 0;
 $errores_porcentuales_suavizado_doble = 0;
+$errores_porcentuales_winters = 0;
 
 
 
@@ -511,6 +513,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Calcular con el método Winters
     $resultadosWinters = calcularWinters($num_periodos, $alpha, $beta, $gamma, $L, $demanda);
+
+    
+    // Calcular la Desviación Media Absoluta (DMA) para Winters
+    $diferencias_acumuladas_winters = 0;
+    $dma_winters = 0;
+
+    // Calcular el Error Cuadrático Medio para Winters
+    $errores_cuadraticos_winters = 0;
+    $ecm_winters = 0;
+
+    // Calcular el Error Porcentual Medio Absoluto para Winters
+    $errores_porcentuales_winters = 0;
+
+    for ($i = 2; $i <= $num_periodos; $i++) {
+        // Calcular la Desviación Media Absoluta (DMA)
+        if (isset($resultadosWinters[$i]) && isset($demanda[$i])) {
+            $diferencia_actual_winters = abs($demanda[$i] - $resultadosWinters[$i]);
+            $diferencias_acumuladas_winters += $diferencia_actual_winters;
+            $dma_winters += $diferencia_actual_winters;
+
+        }
+    }
+
+    $dma_winters /= $num_periodos - 1;
+
+
+    // Calcular el Error Cuadrático Medio (ECM) para Winters
+    for ($i = 2; $i <= $num_periodos; $i++) {
+        // Calcular el Error Cuadrático Medio (ECM)
+        if (isset($resultadosWinters[$i]) && isset($demanda[$i])) {
+            $diferencia_actual_winters = $demanda[$i] - $resultadosWinters[$i];
+            $errores_cuadraticos_winters += pow($diferencia_actual_winters, 2);
+        }
+    }
+    // Calcular el Error Cuadrático Medio (ECM) de Winters
+    if ($errores_cuadraticos_winters > 0 && is_array($demanda)) {
+        $ecm_winters = $errores_cuadraticos_winters / ($num_periodos - 1);
+
+    }
+
+    $mape_winters = 0;
+
+    // Calcular el Error Porcentual Medio Absoluto (MAPE) para Winters
+    for ($i = 2; $i <= $num_periodos; $i++) {
+        // Calcular el Error Porcentual Medio Absoluto (MAPE)
+        if (isset($resultadosWinters[$i]) && isset($demanda[$i]) && $demanda[$i] != 0) {
+            $diferencia_porcentual_winters = abs($demanda[$i] - $resultadosWinters[$i]) / $demanda[$i];
+     
+            $errores_porcentuales_winters += $diferencia_porcentual_winters;
+           
+        }
+    }
+
+    // Calcular el Error Porcentual Medio Absoluto (MAPE) de Winters
+    if ($errores_porcentuales_winters > 0 && is_array($demanda)) {
+        $mape_winters = ($errores_porcentuales_winters / ($num_periodos - 1)) * 100; // Corrección aquí
+}
 }
 
 
@@ -681,7 +740,7 @@ $datos = [
     'n_promedio_movil_ponderado' => [$promedio_diferencias, $ecm_pm_ponderado, $mape_pm_ponderado],
     'suavizado_exponencial_simple' => [$promedio_diferencias_suavizado_simple, $ecm_suavizado_simple, $mape_suavizado_simple],
     'suavizado_exponencial_doble' => [$promedio_diferencias_suavizado_doble, $ecm_suavizado_doble, $mape_suavizado_doble],
-    'winters' => [$promedio_diferencias_winters, $ecm_winters, $mape_winters],
+    'winters' => [$dma_winters, $ecm_winters, $mape_winters],
     'regresion_lineal' => [$promedio_diferencias_regresion_lineal, $ecm_regresion_lineal, $mape_regresion_lineal]
 ];
 
