@@ -542,32 +542,81 @@ if ($metodos_seleccionados != null) {
 
 echo '</tr>';
 
+// Arrays para almacenar datos de la gráfica
+$labels = range(0, $num_periodos - 1);
+$datasets = [];
+
+// Inicializar el conjunto de datos de demanda
+$datasets['Demanda'] = $demanda;
+
 for ($i = 1; $i <= $num_periodos; $i++) {
     echo "<tr>";
     echo "<td>" . $i . "</td>";
     echo "<td>" . $demanda[$i] . "</td>";
 
     // Muestra los datos de los métodos seleccionados
+    // Muestra los datos de los métodos seleccionados
     foreach ($metodos_seleccionados as $metodo) {
         switch ($metodo) {
             case 'n_promedio_movil_simple':
                 $pms = $i - $n;
-                echo '<td>' . (isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '') . '</td>';
+                $value = isset($promedio_movil_simple[$pms]) ? round(floatval($promedio_movil_simple[$pms])) : '';
+                echo '<td>' . $value . '</td>';
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
+
             case 'n_promedio_movil_ponderado':
-                echo '<td>' . ($Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '') . '</td>';
+                $value = $Pmponderado[$i] !== '' ? round($Pmponderado[$i]) : '';
+                echo '<td>' . $value . '</td>';
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
+
             case 'suavizado_exponencial_simple':
-                echo "<td>" . ($resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '') . "</td>";
+                $value = $resultadosSES[$i] !== '' ? round($resultadosSES[$i]) : '';
+                echo "<td>" . $value . "</td>";
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
+
             case 'regresion_lineal':
-                echo '<td>' . (isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '') . '</td>';
+                $value = isset($resultadosRegresionLineal[$i - 1]) ? round($resultadosRegresionLineal[$i - 1]) : '';
+                echo '<td>' . $value . '</td>';
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
+
             case 'suavizado_exponencial_doble':
-                echo "<td>" . (isset($resultadosSuavizadoDoble[$i]) ? round($resultadosSuavizadoDoble[$i]) : '') . "</td>";
+                $value = $resultadosSuavizadoDoble[$i] !== '' ? round($resultadosSuavizadoDoble[$i]) : '';
+                echo "<td>" . $value . "</td>";
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
+
             case 'winters':
-                echo '<td>' . (isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '') . '</td>';
+                $value = isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '';
+                echo '<td>' . $value . '</td>';
+                // Agregar dato al conjunto de datos
+                if (!isset($datasets[$metodo])) {
+                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                }
+                $datasets[$metodo][$i - 1] = $value;
                 break;
         }
     }
@@ -576,7 +625,55 @@ for ($i = 1; $i <= $num_periodos; $i++) {
 }
 
 echo '</table>';
+// Convertir datos de la gráfica a formato JSON
+$chartData = [
+    'labels' => $labels,
+    'datasets' => [],
+];
+
+foreach ($datasets as $label => $data) {
+    $chartData['datasets'][] = [
+        'label' => $label,
+        'data' => $data,
+        'fill' => false,
+    ];
+}
+
+// Imprimir datos de la gráfica
+echo '<h2>Gráfica:</h2>';
+echo '<canvas id="myChart" width="400" height="200"></canvas>';
+echo '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+echo '<script>';
+echo 'var ctx = document.getElementById("myChart").getContext("2d");';
+echo 'var myChart = new Chart(ctx, {';
+echo '    type: "line",';
+echo '    data: ' . json_encode($chartData) . ',';
+echo '    options: {';
+echo '        scales: {';
+echo '            x: [{';
+echo '                type: "linear",';
+echo '                position: "bottom",';
+echo '                ticks: {';
+echo '                    min: 0,';
+echo '                    max: ' . ($num_periodos - 1) . ',';
+echo '                    stepSize: 1,';
+echo '                },';
+echo '            }],';
+echo '            y: [{';
+echo '                type: "linear",';
+echo '                ticks: {';
+echo '                    min: 0,';
+echo '                    max: 1800,';
+echo '                    stepSize: 200,';
+echo '                },';
+echo '            }],';
+echo '        },';
+echo '    },';
+echo '});';
+echo '</script>';
 ?>
+
+
 
 <br>
 <br>
@@ -650,5 +747,9 @@ foreach ($metricas as $i => $metrica) {
 }
 
 echo '</table>';
+
+
+
+
 ?>
 <br>
