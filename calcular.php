@@ -1,3 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
 <?php
 $num_periodos = $_POST['periodos'];
 $selectedMethods = isset($_POST['metodo']) ? $_POST['metodo'] : [];
@@ -480,7 +495,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Método de Winters
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["metodo"]) && $_POST["metodo"] === "winters") {
+// if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["metodo"]) && $_POST["metodo"] === "winters") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $num_periodos = $_POST['periodos'];
     $alpha = $_POST['alpha_winters'];
     $beta = $_POST['beta_winters'];
@@ -508,8 +524,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php
 // Obtén los métodos seleccionados desde el formulario
 $metodos_seleccionados = $_POST['metodo']; // en lugar de $_POST['metodos']
- // Asegúrate de que 'metodos' es el nombre correcto del campo en tu formulario
-
+// Asegúrate de que 'metodos' es el nombre correcto del campo en tu formulario
+echo '<h2>Pronosticos:</h2>';
 echo '<table border="1px">';
 echo '<tr>';
 echo '<th>Periodo</th>';
@@ -568,7 +584,7 @@ echo '</table>';
 <?php
 // Obtén los métodos seleccionados desde el formulario
 $metodos_seleccionados = $_POST['metodo']; // Asegúrate de que 'metodo' es el nombre correcto del campo en tu formulario
-
+echo '<h2>Errores:</h2>';
 echo '<table border="1px" id="tabla">';
 echo '<tr>';
 echo '<th></th>';

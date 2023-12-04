@@ -4,13 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <body>
       <h1>Calculadora de Pronósticos</h1>
+      <br />
+      <br />
       <form action="calcular.php" method="post">
         <label for="periodos">Número de períodos:</label>
         <input type="number" id="periodos" name="periodos" required /><br />
+        <br />
+        <br />
 
         <label for="metodo">Método de resolución:</label>
         <select id="metodo" name="metodo[]" multiple>
@@ -27,9 +32,9 @@
           <option value="winters">Método Winters</option>
           <option value="regresion_lineal">Regresión Lineal</option>
         </select>
-<br>
-<br>
-<br>
+        <br />
+        <br />
+        <br />
         <div id="n_promedio_movil_simple" style="display: none">
           <label for="n_promedio_movil_simple">Valor de n:</label>
           <input
