@@ -110,34 +110,34 @@ function calcularWinters($periodosw, $alphaw, $betaw, $gammaw, $Lw, $demandaw)
     // Calcular At, Tt, Atw, Ttw, St y Winters
     for ($i = 2; $i <= $periodosw; $i++) {
         // At
-        $At[$i] = intval($alphaw * intval($demandaw[$i]) + (1 - $alphaw) * (intval($At[$i - 1]) + intval($Tt[$i - 1])));
+        $At[$i] = floatval($alphaw * floatval($demandaw[$i]) + (1 - $alphaw) * (floatval($At[$i - 1]) + floatval($Tt[$i - 1])));
 
         // Tt
-        $Tt[$i] = intval($betaw * (intval($At[$i]) - intval($At[$i - 1])) + (1 - $betaw) * intval($Tt[$i - 1]));
+        $Tt[$i] = floatval($betaw * (floatval($At[$i]) - floatval($At[$i - 1])) + (1 - $betaw) * floatval($Tt[$i - 1]));
 
         // Atw
         if ($i <= $Lw) {
-            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / 1) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+            $Atw[$i] = floatval($alphaw * (floatval($demandaw[$i]) / 1) + (1 - $alphaw) * (floatval($Atw[$i - 1]) + floatval($Ttw[$i - 1])));
         } else {
-            $St[$i - $Lw] = isset($St[$i - $Lw]) ? intval($St[$i - $Lw]) : 1;
-            $Atw[$i] = intval($alphaw * (intval($demandaw[$i]) / intval($St[$i - $Lw])) + (1 - $alphaw) * (intval($Atw[$i - 1]) + intval($Ttw[$i - 1])));
+            $St[$i - $Lw] = isset($St[$i - $Lw]) ? floatval($St[$i - $Lw]) : 1;
+            $Atw[$i] = floatval($alphaw * (floatval($demandaw[$i]) / floatval($St[$i - $Lw])) + (1 - $alphaw) * (floatval($Atw[$i - 1]) + floatval($Ttw[$i - 1])));
         }
 
         // Ttw
-        $Ttw[$i] = intval($betaw * (intval($Atw[$i]) - intval($Atw[$i - 1])) + (1 - $betaw) * intval($Ttw[$i - 1]));
+        $Ttw[$i] = floatval($betaw * (floatval($Atw[$i]) - floatval($Atw[$i - 1])) + (1 - $betaw) * floatval($Ttw[$i - 1]));
 
         // St
         if ($i <= $Lw) {
-            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * 1); // Siguientes L-1 valores
+            $St[$i] = floatval($gammaw * (floatval($demandaw[$i]) / floatval($Atw[$i])) + (1 - $gammaw) * 1); // Siguientes L-1 valores
         } else {
-            $St[$i] = intval($gammaw * (intval($demandaw[$i]) / intval($Atw[$i])) + (1 - $gammaw) * intval($St[$i - $Lw])); // Resto de valores
+            $St[$i] = floatval($gammaw * (floatval($demandaw[$i]) / floatval($Atw[$i])) + (1 - $gammaw) * floatval($St[$i - $Lw])); // Resto de valores
         }
 
         // Winters
         if ($i <= $Lw) {
-            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * 1);
+            $Winters[$i] = floatval((floatval($Atw[$i - 1]) + 1 * floatval($Ttw[$i - 1])) * 1);
         } else {
-            $Winters[$i] = intval((intval($Atw[$i - 1]) + 1 * intval($Ttw[$i - 1])) * intval($St[$i - $Lw]));
+            $Winters[$i] = floatval((floatval($Atw[$i - 1]) + 1 * floatval($Ttw[$i - 1])) * floatval($St[$i - $Lw]));
         }
 
         //Calcular error
@@ -569,7 +569,7 @@ echo '</table>';
 // Obtén los métodos seleccionados desde el formulario
 $metodos_seleccionados = $_POST['metodo']; // Asegúrate de que 'metodo' es el nombre correcto del campo en tu formulario
 
-echo '<table border="1px">';
+echo '<table border="1px" id="tabla">';
 echo '<tr>';
 echo '<th></th>';
 
@@ -593,17 +593,49 @@ $datos = [
     'regresion_lineal' => [$promedio_diferencias_regresion_lineal, $ecm_regresion_lineal, $mape_regresion_lineal]
 ];
 
+$menores = array_fill_keys($metodos_seleccionados, 0);
+
 foreach ($metricas as $i => $metrica) {
     echo "<tr>";
     echo "<td>$metrica</td>";
 
+    $fila = [];
     // Muestra los datos de los métodos seleccionados
     foreach ($metodos_seleccionados as $metodo) {
-        echo "<td>" . ($datos[$metodo][$i] ?? '') . "</td>";
+        $dato = $datos[$metodo][$i] ?? '';
+        $fila[] = $dato;
+        echo "<td>" . $dato . "</td>";
+    }
+
+    $minimo = min($fila);
+    foreach ($fila as $j => $dato) {
+        if ($dato == $minimo) {
+            $menores[$metodos_seleccionados[$j]]++;
+        }
     }
 
     echo "</tr>";
 }
 
 echo '</table>';
+
+arsort($menores);
+$metodo_menor = key($menores);
+
+
+
+echo "<p>El método con la mayor cantidad de datos menores es: <strong>$metodo_menor</strong></p>";
+echo '<table border="1px">';
+// echo '<tr><th></th><th></th></tr>';
+
+foreach ($metricas as $i => $metrica) {
+    $dato = $datos[$metodo_menor][$i] ?? '';
+    echo "<tr><td>$metrica</td><td>$dato</td></tr>";
+}
+
+echo '</table>';
 ?>
+<br>
+
+
+

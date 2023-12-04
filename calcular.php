@@ -600,14 +600,19 @@ for ($i = 1; $i <= $num_periodos; $i++) {
                 break;
 
             case 'suavizado_exponencial_doble':
-                $value = $resultadosSuavizadoDoble[$i] !== '' ? round($resultadosSuavizadoDoble[$i]) : '';
-                echo "<td>" . $value . "</td>";
-                // Agregar dato al conjunto de datos
-                if (!isset($datasets[$metodo])) {
-                    $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                if (array_key_exists($i, $resultadosSuavizadoDoble)) {
+                    $value = $resultadosSuavizadoDoble[$i] !== '' ? round($resultadosSuavizadoDoble[$i]) : '';
+                    echo "<td>" . $value . "</td>";
+                    // Agregar dato al conjunto de datos
+                    if (!isset($datasets[$metodo])) {
+                        $datasets[$metodo] = array_fill(0, $num_periodos, null);
+                    }
+                    $datasets[$metodo][$i - 1] = $value;
+                    break;
+                } else {
+                    $value = '';
                 }
-                $datasets[$metodo][$i - 1] = $value;
-                break;
+
 
             case 'winters':
                 $value = isset($resultadosWinters[$i]) ? round($resultadosWinters[$i]) : '';
